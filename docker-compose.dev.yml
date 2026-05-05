@@ -1,0 +1,38 @@
+version: "3.9"
+
+# Development overrides — hot reload + exposed ports
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: builder          # Use builder stage for dev (has build tools)
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    volumes:
+      - ./backend/app:/app/app  # Hot reload
+    environment:
+      - DEBUG=true
+      - LOG_FORMAT=text
+
+  worker:
+    command: ["python", "-m", "app.jobs.worker"]
+    volumes:
+      - ./backend/app:/app/app
+
+  redis:
+    ports:
+      - "6379:6379"             # Expose Redis for local debugging
+
+  dashboard:
+    build:
+      context: ./dashboard
+    command: ["npm", "run", "dev"]
+    volumes:
+      - ./dashboard:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    environment:
+      - BACKEND_URL=http://backend:8000

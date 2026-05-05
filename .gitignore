@@ -1,1 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# Environment
+.env
+*.env
+!.env.example
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+chroma_data/
+
+# Docker
+.docker/
+
+# Node
+node_modules/
+.next/
+out/
+.npm/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+#plan
 plan/*
+# Logs
+*.log
+logs/
+
+# Keys
+*.pem
+*.key

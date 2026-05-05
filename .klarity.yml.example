@@ -1,0 +1,45 @@
+# .klarity.yml
+# Drop this file in the root of your repository to configure Klarity.
+# All fields are optional — Klarity works with zero config using sensible defaults.
+
+klarity:
+
+  # ── Scoring Weights ──────────────────────────────────────────────────────────
+  scoring:
+    linked_issue_weight: 15
+    tests_changed_weight: 20
+    description_quality_weight: 15
+    commit_quality_weight: 20
+    author_history_weight: 20
+    diff_size_weight: 10
+    min_description_words: 30
+    max_diff_lines: 500
+
+  # ── AI Slop Detection ─────────────────────────────────────────────────────────
+  ai_detection:
+    enabled: true
+    slop_threshold: 5
+
+  # ── Auto-Responses ────────────────────────────────────────────────────────────
+  auto_responses:
+    no_linked_issue: >
+      Hi @{author}! Thanks for opening this PR.
+      Could you link it to an existing issue?
+
+    no_tests: >
+      Thanks @{author}! Could you add tests for the new behavior?
+
+    suspected_ai: >
+      Hi @{author}! Could you confirm you've read and understood every line of code?
+
+    first_time_contributor: >
+      Welcome @{author}! This is your first contribution — we appreciate it!
+
+  # ── Feature Flags ─────────────────────────────────────────────────────────────
+  features:
+    scoring: true
+    ai_detection: true
+    issue_triage: true
+    contributor_reputation: true
+    weekly_digest: true
+    dashboard: true
