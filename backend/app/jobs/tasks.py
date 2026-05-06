@@ -126,6 +126,7 @@ async def process_pull_request_event(
 
             # Check if we already have a score record (re-score case)
             existing = await _get_existing_score(session, repo_full_name, pr_number)
+            comment_id: int | None = None
 
             if existing and existing.comment_id:
                 # Update the existing comment instead of posting a new one

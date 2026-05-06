@@ -21,7 +21,7 @@ async def shutdown(ctx):
     pass
 
 
-class WorkerSettings:
+class WorkerSettings:  # type: ignore[misc]
     functions = [process_pull_request_event, process_issue_event]
     on_startup = startup
     on_shutdown = shutdown

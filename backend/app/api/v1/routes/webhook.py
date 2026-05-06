@@ -95,5 +95,5 @@ async def github_webhook(
 async def _enqueue_job(function_name: str, payload: dict[str, Any], delivery_id: str) -> None:
     redis = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL))
     await redis.enqueue_job(function_name, payload=payload, delivery_id=delivery_id)
-    await redis.aclose()
+    await redis.aclose()  # type: ignore[attr-defined]
     logger.info("webhook.job_enqueued", function=function_name, delivery_id=delivery_id)

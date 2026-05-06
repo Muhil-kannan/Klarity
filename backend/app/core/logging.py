@@ -5,6 +5,7 @@ Outputs JSON in production, human-readable in development.
 
 import logging
 import sys
+from typing import Any
 
 import structlog
 
@@ -14,7 +15,7 @@ from app.core.config import settings
 def setup_logging() -> None:
     log_level = getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO)
 
-    shared_processors = [
+    shared_processors: list[Any] = [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
@@ -23,7 +24,7 @@ def setup_logging() -> None:
     ]
 
     if settings.LOG_FORMAT == "json":
-        renderer = structlog.processors.JSONRenderer()
+        renderer: Any = structlog.processors.JSONRenderer()
     else:
         renderer = structlog.dev.ConsoleRenderer(colors=True)
 

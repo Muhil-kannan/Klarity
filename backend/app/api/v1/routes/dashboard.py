@@ -5,7 +5,7 @@ Returns scored PRs, stats, and contributor data for the frontend.
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
-from sqlmodel import select
+from sqlmodel import col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.db.models import ContributorReputation, PRScore
@@ -59,13 +59,13 @@ async def list_pr_scores(
         query
         .where(PRScore.score >= min_score)
         .where(PRScore.score <= max_score)
-        .order_by(PRScore.score.desc())
+        .order_by(col(PRScore.score).desc())
         .offset(offset)
         .limit(limit)
     )
 
     results = await session.exec(query)
-    return results.all()
+    return list(results.all())
 
 
 @router.get("/scores/{repo_owner}/{repo_name}/{pr_number}", response_model=PRScore)
@@ -130,7 +130,7 @@ async def list_contributors(
     if repo:
         query = query.where(ContributorReputation.repo_full_name == repo)
 
-    query = query.order_by(ContributorReputation.avg_score.desc()).offset(offset).limit(limit)
+    query = query.order_by(col(ContributorReputation.avg_score).desc()).offset(offset).limit(limit)
     results = await session.exec(query)
     reps = results.all()
 
