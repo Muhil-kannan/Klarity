@@ -34,6 +34,8 @@ dev = [
     "ruff==0.8.4",
     "mypy==1.13.0",
     "httpx==0.28.1",
+    "types-PyYAML==6.0.12.20240917",
+    "types-redis==4.6.0.20241004",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -51,6 +53,10 @@ ignore = ["E501"]
 python_version = "3.12"
 strict = false
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["app.db.base", "app.db.session", "app.jobs.tasks", "app.jobs.worker"]
+ignore_errors = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

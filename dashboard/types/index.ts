@@ -17,6 +17,26 @@ export interface PRScore {
   created_at: string;
 }
 
+export interface DashboardStats {
+  total_prs: number;
+  avg_score: number;
+  high_quality: number;
+  needs_work: number;
+  suspected_ai: number;
+  repos: number;
+}
+
+export interface Contributor {
+  author_login: string;
+  repo_full_name: string;
+  total_prs: number;
+  merged_prs: number;
+  abandoned_prs: number;
+  avg_score: number;
+  first_contribution_at: string | null;
+  updated_at: string;
+}
+
 export interface ScoreBreakdown {
   linked_issue: number;
   tests_changed: number;

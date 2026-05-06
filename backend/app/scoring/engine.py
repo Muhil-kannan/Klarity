@@ -3,9 +3,8 @@ Main scoring orchestrator.
 Coordinates heuristics, slop detection, and produces the final score.
 """
 
-import json
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from app.core.logging import get_logger
 from app.klarity_config.parser import KlarityConfig
@@ -18,19 +17,19 @@ logger = get_logger(__name__)
 @dataclass
 class ScoringResult:
     score: int
-    breakdown: Dict[str, int]
-    suggestions: List[str]
+    breakdown: dict[str, int]
+    suggestions: list[str]
     is_suspected_ai: bool
-    slop_signals: List[str]
-    labels_to_apply: List[str]
+    slop_signals: list[str]
+    labels_to_apply: list[str]
 
 
 async def score_pull_request(
-    pr_data: Dict[str, Any],
-    files: List[Dict[str, Any]],
-    commits: List[Dict[str, Any]],
+    pr_data: dict[str, Any],
+    files: list[dict[str, Any]],
+    commits: list[dict[str, Any]],
     merged_pr_count: int,
-    config: Optional[KlarityConfig] = None,
+    config: KlarityConfig | None = None,
 ) -> ScoringResult:
     """
     Run the full scoring pipeline for a pull request.
@@ -93,10 +92,10 @@ async def score_pull_request(
 
 def _determine_labels(
     score: int,
-    breakdown: Dict[str, int],
+    breakdown: dict[str, int],
     is_suspected_ai: bool,
     config: KlarityConfig,
-) -> List[str]:
+) -> list[str]:
     labels = []
 
     if is_suspected_ai:

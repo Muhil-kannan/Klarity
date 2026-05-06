@@ -4,7 +4,6 @@ All values are loaded from environment variables / .env file.
 """
 
 from functools import lru_cache
-from typing import List
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -21,8 +20,8 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = False
     SECRET_KEY: str
-    ALLOWED_HOSTS: List[str] = ["*"]
-    CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    ALLOWED_HOSTS: list[str] = ["*"]
+    CORS_ORIGINS: list[str] = ["http://localhost:3000"]
 
     # GitHub App
     GITHUB_APP_ID: str
@@ -58,7 +57,7 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    return Settings()  # type: ignore[call-arg]
 
 
 settings = get_settings()

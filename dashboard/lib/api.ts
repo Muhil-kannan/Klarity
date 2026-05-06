@@ -1,20 +1,15 @@
-import type { PRScore } from "@/types";
+import type { Contributor, DashboardStats, PRScore } from "@/types";
 
-// Server-side: call backend directly. Client-side: use the rewrite proxy.
 function getBaseUrl() {
   if (typeof window === "undefined") {
-    // Running on the server (Next.js SSR / Server Components)
     return process.env.BACKEND_URL ?? "http://localhost:8000";
   }
-  // Running in the browser — use the Next.js rewrite proxy
   return "";
 }
 
 async function apiFetch(path: string): Promise<Response> {
   const base = getBaseUrl();
-  const url = base
-    ? `${base}/api/v1${path}`
-    : `/api/backend${path}`;
+  const url = base ? `${base}/api/v1${path}` : `/api/backend${path}`;
   return fetch(url, { cache: "no-store" });
 }
 
@@ -39,9 +34,25 @@ export async function fetchPRScores(params: {
   return res.json();
 }
 
-export async function fetchPRScore(repoFullName: string, prNumber: number): Promise<PRScore> {
-  const res = await apiFetch(`/dashboard/scores/${repoFullName}/${prNumber}`);
-  if (!res.ok) throw new Error("Score not found");
+export async function fetchStats(repo?: string): Promise<DashboardStats> {
+  const query = repo ? `?repo=${encodeURIComponent(repo)}` : "";
+  const res = await apiFetch(`/dashboard/stats${query}`);
+  if (!res.ok) throw new Error("Failed to fetch stats");
+  return res.json();
+}
+
+export async function fetchContributors(params: {
+  repo?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<Contributor[]> {
+  const query = new URLSearchParams();
+  if (params.repo) query.set("repo", params.repo);
+  if (params.limit) query.set("limit", String(params.limit));
+  if (params.offset) query.set("offset", String(params.offset));
+
+  const res = await apiFetch(`/dashboard/contributors?${query}`);
+  if (!res.ok) throw new Error("Failed to fetch contributors");
   return res.json();
 }
 

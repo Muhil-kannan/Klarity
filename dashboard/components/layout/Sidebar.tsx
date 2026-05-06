@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GitBranch, LayoutDashboard, Bot, Users, Settings } from "lucide-react";
+import { GitBranch, LayoutDashboard, Bot, Users, Settings, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/", label: "Queue", icon: LayoutDashboard },
   { href: "/suspected-ai", label: "Suspected AI", icon: Bot },
+  { href: "/stale", label: "Stale", icon: Clock },
   { href: "/contributors", label: "Contributors", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

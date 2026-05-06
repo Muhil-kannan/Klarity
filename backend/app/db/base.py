@@ -3,9 +3,9 @@ Database engine and session setup using SQLModel + aiosqlite.
 """
 
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
 from app.core.logging import get_logger
@@ -18,7 +18,7 @@ engine: AsyncEngine = create_async_engine(
     future=True,
 )
 
-AsyncSessionLocal = sessionmaker(
+AsyncSessionLocal: sessionmaker[AsyncSession] = sessionmaker(  # type: ignore[assignment]
     bind=engine,
     class_=AsyncSession,
     expire_on_commit=False,
