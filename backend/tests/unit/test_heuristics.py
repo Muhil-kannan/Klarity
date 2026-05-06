@@ -2,14 +2,12 @@
 Unit tests for the heuristic scoring checks.
 """
 
-import pytest
 
 from app.scoring.heuristics import (
     HeuristicWeights,
     check_author_history,
     check_commit_quality,
     check_description_quality,
-    check_diff_size,
     check_linked_issue,
     check_tests_changed,
     run_all_checks,

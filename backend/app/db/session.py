@@ -2,7 +2,7 @@
 Database session dependency for FastAPI routes.
 """
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 

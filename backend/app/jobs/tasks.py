@@ -3,13 +3,13 @@ Background job tasks processed by the ARQ worker.
 """
 
 import json
+import re
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.config import settings
 from app.core.logging import get_logger
 from app.db.base import AsyncSessionLocal
 from app.db.models import PRScore, WebhookEvent
@@ -51,8 +51,8 @@ DEFAULT_IGNORE_LIST = {
 
 
 async def process_pull_request_event(
-    ctx: Dict[str, Any],
-    payload: Dict[str, Any],
+    ctx: dict[str, Any],
+    payload: dict[str, Any],
     delivery_id: str,
 ) -> None:
     """
@@ -219,7 +219,7 @@ async def _fetch_repo_config(github: GitHubClient, owner: str, repo: str) -> Kla
 
 async def _get_existing_score(
     session: AsyncSession, repo_full_name: str, pr_number: int
-) -> Optional[PRScore]:
+) -> PRScore | None:
     result = await session.exec(
         select(PRScore)
         .where(PRScore.repo_full_name == repo_full_name)
@@ -250,8 +250,8 @@ async def _mark_event_failed(session: AsyncSession, delivery_id: str, error: str
 
 
 async def process_issue_event(
-    ctx: Dict[str, Any],
-    payload: Dict[str, Any],
+    ctx: dict[str, Any],
+    payload: dict[str, Any],
     delivery_id: str,
 ) -> None:
     """
@@ -323,12 +323,10 @@ _ISSUE_LABEL_COLORS = {
     "good-first-issue": "7057ff",
 }
 
-import re as _re
-
-_BUG_PATTERN = _re.compile(r"\b(bug|error|crash|exception|broken|fail|issue|problem|wrong|incorrect|unexpected)\b", _re.IGNORECASE)
-_FEATURE_PATTERN = _re.compile(r"\b(feature|request|add|support|implement|enhance|improve|allow|enable|wish|would be nice)\b", _re.IGNORECASE)
-_QUESTION_PATTERN = _re.compile(r"\b(how|why|what|when|where|can i|is it possible|does|should)\b", _re.IGNORECASE)
-_REPRO_PATTERN = _re.compile(r"(steps to reproduce|to reproduce|reproduction|repro|how to reproduce)", _re.IGNORECASE)
+_BUG_PATTERN = re.compile(r"\b(bug|error|crash|exception|broken|fail|issue|problem|wrong|incorrect|unexpected)\b", re.IGNORECASE)
+_FEATURE_PATTERN = re.compile(r"\b(feature|request|add|support|implement|enhance|improve|allow|enable|wish|would be nice)\b", re.IGNORECASE)
+_QUESTION_PATTERN = re.compile(r"\b(how|why|what|when|where|can i|is it possible|does|should)\b", re.IGNORECASE)
+_REPRO_PATTERN = re.compile(r"(steps to reproduce|to reproduce|reproduction|repro|how to reproduce)", re.IGNORECASE)
 
 
 def _classify_issue(title: str, body: str) -> str | None:

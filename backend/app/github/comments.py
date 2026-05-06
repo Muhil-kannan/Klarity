@@ -3,8 +3,6 @@ PR and issue comment templates.
 Generates the markdown comment body posted to GitHub.
 """
 
-from typing import Dict, List
-
 
 SCORE_EMOJI = {
     range(80, 101): "🟢",
@@ -33,8 +31,8 @@ def _get_score_meta(score: int) -> tuple[str, str]:
 
 def build_pr_score_comment(
     score: int,
-    breakdown: Dict[str, int],
-    suggestions: List[str],
+    breakdown: dict[str, int],
+    suggestions: list[str],
     is_suspected_ai: bool,
     author: str,
 ) -> str:

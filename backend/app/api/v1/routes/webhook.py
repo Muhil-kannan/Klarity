@@ -4,7 +4,7 @@ Accepts events from GitHub, validates signatures, and enqueues background jobs.
 """
 
 import json
-from typing import Any, Dict
+from typing import Any
 
 from arq import create_pool
 from arq.connections import RedisSettings
@@ -40,7 +40,7 @@ async def github_webhook(
     Always returns 200 immediately — processing happens in the background.
     """
     body = await verify_webhook_signature(request)
-    payload: Dict[str, Any] = json.loads(body)
+    payload: dict[str, Any] = json.loads(body)
 
     logger.info(
         "webhook.received",
@@ -92,7 +92,7 @@ async def github_webhook(
     return Response(content='{"message": "queued"}', media_type="application/json")
 
 
-async def _enqueue_job(function_name: str, payload: Dict[str, Any], delivery_id: str) -> None:
+async def _enqueue_job(function_name: str, payload: dict[str, Any], delivery_id: str) -> None:
     redis = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL))
     await redis.enqueue_job(function_name, payload=payload, delivery_id=delivery_id)
     await redis.aclose()

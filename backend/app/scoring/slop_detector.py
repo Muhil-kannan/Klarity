@@ -4,8 +4,8 @@ Aggregates heuristic signals to flag suspected AI-generated PRs.
 """
 
 import re
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from typing import Any
 
 from app.core.logging import get_logger
 
@@ -43,16 +43,16 @@ DEFAULT_SLOP_THRESHOLD = 5   # total weight to trigger suspected-ai label
 
 
 def detect_slop(
-    pr_body: Optional[str],
-    files: List[Dict[str, Any]],
-    commits: List[Dict[str, Any]],
+    pr_body: str | None,
+    files: list[dict[str, Any]],
+    commits: list[dict[str, Any]],
     merged_pr_count: int,
     slop_threshold: int = DEFAULT_SLOP_THRESHOLD,
-) -> tuple[bool, List[str]]:
+) -> tuple[bool, list[str]]:
     """
     Returns (is_suspected_ai, list_of_triggered_signal_names).
     """
-    signals: List[SlopSignal] = []
+    signals: list[SlopSignal] = []
 
     # Signal 1: Generic commit messages (high)
     generic_commits = [

@@ -3,11 +3,9 @@ Dashboard API endpoints.
 Returns scored PRs, stats, and contributor data for the frontend.
 """
 
-from typing import List, Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
-from sqlmodel import func, select
+from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.db.models import ContributorReputation, PRScore
@@ -34,22 +32,22 @@ class ContributorResponse(BaseModel):
     merged_prs: int
     abandoned_prs: int
     avg_score: float
-    first_contribution_at: Optional[str]
+    first_contribution_at: str | None
     updated_at: str
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
-@router.get("/scores", response_model=List[PRScore])
+@router.get("/scores", response_model=list[PRScore])
 async def list_pr_scores(
-    repo: Optional[str] = Query(default=None),
+    repo: str | None = Query(default=None),
     min_score: int = Query(default=0, ge=0, le=100),
     max_score: int = Query(default=100, ge=0, le=100),
     suspected_ai_only: bool = Query(default=False),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
     session: AsyncSession = Depends(get_session),
-) -> List[PRScore]:
+) -> list[PRScore]:
     query = select(PRScore)
 
     if repo:
@@ -91,7 +89,7 @@ async def get_pr_score(
 
 @router.get("/stats", response_model=StatsResponse)
 async def get_stats(
-    repo: Optional[str] = Query(default=None),
+    repo: str | None = Query(default=None),
     session: AsyncSession = Depends(get_session),
 ) -> StatsResponse:
     query = select(PRScore)
@@ -121,13 +119,13 @@ async def get_stats(
     )
 
 
-@router.get("/contributors", response_model=List[ContributorResponse])
+@router.get("/contributors", response_model=list[ContributorResponse])
 async def list_contributors(
-    repo: Optional[str] = Query(default=None),
+    repo: str | None = Query(default=None),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
     session: AsyncSession = Depends(get_session),
-) -> List[ContributorResponse]:
+) -> list[ContributorResponse]:
     query = select(ContributorReputation)
     if repo:
         query = query.where(ContributorReputation.repo_full_name == repo)

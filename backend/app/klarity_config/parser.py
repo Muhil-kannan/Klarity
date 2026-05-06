@@ -3,8 +3,6 @@
 Loads and validates per-repo configuration with sensible defaults.
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, Optional
 
 import yaml
 from pydantic import BaseModel, Field
@@ -24,7 +22,7 @@ class ScoringConfig(BaseModel):
 class AIDetectionConfig(BaseModel):
     enabled: bool = True
     slop_threshold: int = Field(default=5, ge=0)
-    checks: Dict[str, bool] = Field(default_factory=lambda: {
+    checks: dict[str, bool] = Field(default_factory=lambda: {
         "generic_commit_messages": True,
         "no_tests_large_diff": True,
         "zero_repo_history": True,
@@ -74,7 +72,7 @@ class KlarityConfig(BaseModel):
     features: FeaturesConfig = Field(default_factory=FeaturesConfig)
 
 
-def parse_config(yaml_content: Optional[str]) -> KlarityConfig:
+def parse_config(yaml_content: str | None) -> KlarityConfig:
     """
     Parse a .klarity.yml string into a KlarityConfig.
     Falls back to defaults if content is None or invalid.

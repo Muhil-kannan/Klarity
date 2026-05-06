@@ -4,9 +4,8 @@ Each check returns a score (0 to its max weight) and an optional suggestion.
 """
 
 import re
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
-
+from dataclasses import dataclass
+from typing import Any
 
 GENERIC_COMMIT_PATTERNS = re.compile(
     r"^(fix|update|change|misc|wip|temp|test|patch|hotfix|refactor|cleanup|"
@@ -26,7 +25,7 @@ class CheckResult:
     score: int
     max_score: int
     passed: bool
-    suggestion: Optional[str] = None
+    suggestion: str | None = None
 
 
 @dataclass
@@ -41,7 +40,7 @@ class HeuristicWeights:
     max_diff_lines: int = 500
 
 
-def check_linked_issue(pr_body: Optional[str], weights: HeuristicWeights) -> CheckResult:
+def check_linked_issue(pr_body: str | None, weights: HeuristicWeights) -> CheckResult:
     """Check if the PR body references a GitHub issue."""
     if pr_body and ISSUE_LINK_PATTERN.search(pr_body):
         return CheckResult(score=weights.linked_issue, max_score=weights.linked_issue, passed=True)
@@ -53,7 +52,7 @@ def check_linked_issue(pr_body: Optional[str], weights: HeuristicWeights) -> Che
     )
 
 
-def check_tests_changed(files: List[Dict[str, Any]], weights: HeuristicWeights) -> CheckResult:
+def check_tests_changed(files: list[dict[str, Any]], weights: HeuristicWeights) -> CheckResult:
     """Check if any test files were added or modified."""
     test_pattern = re.compile(r"(test|spec|__tests__|_test\.)", re.IGNORECASE)
     has_tests = any(test_pattern.search(f.get("filename", "")) for f in files)
@@ -77,7 +76,7 @@ def check_tests_changed(files: List[Dict[str, Any]], weights: HeuristicWeights) 
     )
 
 
-def check_description_quality(pr_body: Optional[str], weights: HeuristicWeights) -> CheckResult:
+def check_description_quality(pr_body: str | None, weights: HeuristicWeights) -> CheckResult:
     """Check if the PR description is meaningful."""
     if not pr_body or not pr_body.strip():
         return CheckResult(
@@ -102,7 +101,7 @@ def check_description_quality(pr_body: Optional[str], weights: HeuristicWeights)
     )
 
 
-def check_commit_quality(commits: List[Dict[str, Any]], weights: HeuristicWeights) -> CheckResult:
+def check_commit_quality(commits: list[dict[str, Any]], weights: HeuristicWeights) -> CheckResult:
     """Check if commit messages are descriptive."""
     if not commits:
         return CheckResult(score=0, max_score=weights.commit_quality, passed=False,
@@ -144,8 +143,8 @@ def check_author_history(merged_pr_count: int, weights: HeuristicWeights) -> Che
 
 
 def check_diff_size(
-    files: List[Dict[str, Any]],
-    pr_body: Optional[str],
+    files: list[dict[str, Any]],
+    pr_body: str | None,
     weights: HeuristicWeights,
 ) -> CheckResult:
     """Check if the diff size is proportionate to the stated scope."""
@@ -171,12 +170,12 @@ def check_diff_size(
 
 
 def run_all_checks(
-    pr_body: Optional[str],
-    files: List[Dict[str, Any]],
-    commits: List[Dict[str, Any]],
+    pr_body: str | None,
+    files: list[dict[str, Any]],
+    commits: list[dict[str, Any]],
     merged_pr_count: int,
-    weights: Optional[HeuristicWeights] = None,
-) -> Tuple[int, Dict[str, int], List[str]]:
+    weights: HeuristicWeights | None = None,
+) -> tuple[int, dict[str, int], list[str]]:
     """
     Run all heuristic checks and return:
     - total score (0–100)

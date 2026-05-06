@@ -4,7 +4,7 @@ All GitHub API calls go through this module.
 """
 
 import asyncio
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import httpx
 
@@ -21,9 +21,9 @@ _MAX_RETRIES = 3
 class GitHubClient:
     def __init__(self, installation_id: int):
         self.installation_id = installation_id
-        self._token: Optional[str] = None
+        self._token: str | None = None
 
-    async def _get_headers(self) -> Dict[str, str]:
+    async def _get_headers(self) -> dict[str, str]:
         if not self._token:
             self._token = await get_installation_token(self.installation_id)
         return {
@@ -51,11 +51,11 @@ class GitHubClient:
             response.raise_for_status()
             return response
 
-    async def get_pull_request(self, owner: str, repo: str, pr_number: int) -> Dict[str, Any]:
+    async def get_pull_request(self, owner: str, repo: str, pr_number: int) -> dict[str, Any]:
         response = await self._request("GET", f"{GITHUB_API_BASE}/repos/{owner}/{repo}/pulls/{pr_number}")
         return response.json()
 
-    async def get_pr_files(self, owner: str, repo: str, pr_number: int) -> List[Dict[str, Any]]:
+    async def get_pr_files(self, owner: str, repo: str, pr_number: int) -> list[dict[str, Any]]:
         """Returns list of files changed in the PR (handles pagination)."""
         files = []
         page = 1
@@ -72,7 +72,7 @@ class GitHubClient:
             page += 1
         return files
 
-    async def get_pr_commits(self, owner: str, repo: str, pr_number: int) -> List[Dict[str, Any]]:
+    async def get_pr_commits(self, owner: str, repo: str, pr_number: int) -> list[dict[str, Any]]:
         response = await self._request(
             "GET",
             f"{GITHUB_API_BASE}/repos/{owner}/{repo}/pulls/{pr_number}/commits",
@@ -80,7 +80,7 @@ class GitHubClient:
         )
         return response.json()
 
-    async def create_pr_comment(self, owner: str, repo: str, pr_number: int, body: str) -> Dict[str, Any]:
+    async def create_pr_comment(self, owner: str, repo: str, pr_number: int, body: str) -> dict[str, Any]:
         response = await self._request(
             "POST",
             f"{GITHUB_API_BASE}/repos/{owner}/{repo}/issues/{pr_number}/comments",
@@ -88,7 +88,7 @@ class GitHubClient:
         )
         return response.json()
 
-    async def update_pr_comment(self, owner: str, repo: str, comment_id: int, body: str) -> Dict[str, Any]:
+    async def update_pr_comment(self, owner: str, repo: str, comment_id: int, body: str) -> dict[str, Any]:
         response = await self._request(
             "PATCH",
             f"{GITHUB_API_BASE}/repos/{owner}/{repo}/issues/comments/{comment_id}",
@@ -96,7 +96,7 @@ class GitHubClient:
         )
         return response.json()
 
-    async def add_labels(self, owner: str, repo: str, issue_number: int, labels: List[str]) -> None:
+    async def add_labels(self, owner: str, repo: str, issue_number: int, labels: list[str]) -> None:
         await self._request(
             "POST",
             f"{GITHUB_API_BASE}/repos/{owner}/{repo}/issues/{issue_number}/labels",
@@ -126,7 +126,7 @@ class GitHubClient:
         )
         return response.json().get("total_count", 0)
 
-    async def get_file_content(self, owner: str, repo: str, path: str) -> Optional[str]:
+    async def get_file_content(self, owner: str, repo: str, path: str) -> str | None:
         """Fetch a file's decoded content from the repo. Returns None if not found."""
         import base64
         async with httpx.AsyncClient() as client:

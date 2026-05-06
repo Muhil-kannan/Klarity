@@ -2,7 +2,6 @@
 Unit tests for the AI slop detector.
 """
 
-import pytest
 
 from app.scoring.slop_detector import detect_slop
 
