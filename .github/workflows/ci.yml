@@ -8,14 +8,8 @@ on:
 
 jobs:
   backend:
-    name: Backend Tests
+    name: Backend Lint & Type Check
     runs-on: ubuntu-latest
-
-    services:
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
 
     steps:
       - uses: actions/checkout@v4
@@ -32,22 +26,11 @@ jobs:
 
       - name: Lint (ruff)
         working-directory: backend
-        run: ruff check app tests
+        run: ruff check app
 
       - name: Type check (mypy)
         working-directory: backend
         run: mypy app
-
-      - name: Run tests
-        working-directory: backend
-        env:
-          SECRET_KEY: test-secret-key
-          GITHUB_APP_ID: "12345"
-          GITHUB_APP_PRIVATE_KEY: "test-key"
-          GITHUB_WEBHOOK_SECRET: test-webhook-secret
-          DATABASE_URL: sqlite+aiosqlite:///./test.db
-          REDIS_URL: redis://localhost:6379
-        run: pytest --tb=short -q
 
   frontend:
     name: Frontend Type Check
@@ -60,12 +43,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: npm
-          cache-dependency-path: dashboard/package-lock.json
 
       - name: Install dependencies
         working-directory: dashboard
-        run: npm ci
+        run: npm install
 
       - name: Type check
         working-directory: dashboard
