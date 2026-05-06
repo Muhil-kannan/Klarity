@@ -9,6 +9,7 @@ from typing import Any, Dict
 from arq import create_pool
 from arq.connections import RedisSettings
 from fastapi import APIRouter, Header, Request, Response, status
+from sqlmodel import select
 
 from app.core.config import settings
 from app.core.logging import get_logger
@@ -20,7 +21,6 @@ logger = get_logger(__name__)
 
 router = APIRouter()
 
-# Events we care about
 HANDLED_EVENTS = {
     "pull_request": ["opened", "edited", "synchronize", "reopened"],
     "issues": ["opened", "edited"],
@@ -39,7 +39,6 @@ async def github_webhook(
     Receive GitHub webhook events.
     Always returns 200 immediately — processing happens in the background.
     """
-    # Verify signature first
     body = await verify_webhook_signature(request)
     payload: Dict[str, Any] = json.loads(body)
 
@@ -50,19 +49,24 @@ async def github_webhook(
         repo=payload.get("repository", {}).get("full_name", "unknown"),
     )
 
-    # Handle ping (GitHub sends this when you first configure the webhook)
     if x_github_event == "ping":
         return Response(content='{"message": "pong"}', media_type="application/json")
 
-    # Check if we handle this event + action
     action = payload.get("action", "")
     handled_actions = HANDLED_EVENTS.get(x_github_event, [])
     if not handled_actions or (action not in handled_actions and "*" not in handled_actions):
         logger.debug("webhook.ignored", gh_event=x_github_event, action=action)
         return Response(content='{"message": "ignored"}', media_type="application/json")
 
-    # Persist the event record
+    # Replay protection — reject duplicate delivery IDs
     async for session in get_session():
+        existing = await session.exec(
+            select(WebhookEvent).where(WebhookEvent.delivery_id == x_github_delivery)
+        )
+        if existing.first():
+            logger.warning("webhook.duplicate", delivery_id=x_github_delivery)
+            return Response(content='{"message": "duplicate"}', media_type="application/json")
+
         event_record = WebhookEvent(
             delivery_id=x_github_delivery,
             event_type=x_github_event,
@@ -80,18 +84,16 @@ async def github_webhook(
         session.add(event_record)
 
     # Enqueue background job
-    if x_github_event == "pull_request" and action in HANDLED_EVENTS["pull_request"]:
-        await _enqueue_pr_job(payload, x_github_delivery)
+    if x_github_event == "pull_request":
+        await _enqueue_job("process_pull_request_event", payload, x_github_delivery)
+    elif x_github_event == "issues":
+        await _enqueue_job("process_issue_event", payload, x_github_delivery)
 
     return Response(content='{"message": "queued"}', media_type="application/json")
 
 
-async def _enqueue_pr_job(payload: Dict[str, Any], delivery_id: str) -> None:
+async def _enqueue_job(function_name: str, payload: Dict[str, Any], delivery_id: str) -> None:
     redis = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL))
-    await redis.enqueue_job(
-        "process_pull_request_event",
-        payload=payload,
-        delivery_id=delivery_id,
-    )
+    await redis.enqueue_job(function_name, payload=payload, delivery_id=delivery_id)
     await redis.aclose()
-    logger.info("webhook.job_enqueued", delivery_id=delivery_id)
+    logger.info("webhook.job_enqueued", function=function_name, delivery_id=delivery_id)

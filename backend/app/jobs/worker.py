@@ -9,7 +9,7 @@ from arq.connections import RedisSettings
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.db.base import init_db
-from app.jobs.tasks import process_pull_request_event
+from app.jobs.tasks import process_issue_event, process_pull_request_event
 
 
 async def startup(ctx):
@@ -22,7 +22,7 @@ async def shutdown(ctx):
 
 
 class WorkerSettings:
-    functions = [process_pull_request_event]
+    functions = [process_pull_request_event, process_issue_event]
     on_startup = startup
     on_shutdown = shutdown
     redis_settings = RedisSettings.from_dsn(settings.REDIS_URL)
